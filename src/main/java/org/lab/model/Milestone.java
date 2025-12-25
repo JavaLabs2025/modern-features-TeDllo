@@ -10,7 +10,7 @@ public record Milestone(
     UUID projectId,
     LocalDate startDate,
     LocalDate endDate,
-    List<UUID> ticketIds,
+    @With List<UUID> ticketIds,
     @With MilestoneStatus status
 ) {
 }

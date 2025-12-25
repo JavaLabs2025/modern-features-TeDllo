@@ -10,6 +10,12 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
+}
+
 dependencies {
     implementation("org.jetbrains:annotations:26.0.2")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
