@@ -12,27 +12,27 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTest extends TestBase {
-    
+
     @BeforeEach
     void setUp() {
     }
-    
+
     @Test
     void testRegister() {
-        User user = userService.register("John Doe");
-        
+        var user = userService.register("John Doe");
+
         assertNotNull(user);
         assertNotNull(user.id());
         assertEquals("John Doe", user.name());
         assertNotNull(user.createdAt());
         assertTrue(user.createdAt().isBefore(LocalDateTime.now().plusSeconds(1)));
     }
-    
+
     @Test
     void testRegisterMultipleUsers() {
-        User user1 = userService.register("User1");
-        User user2 = userService.register("User2");
-        
+        var user1 = userService.register("User1");
+        var user2 = userService.register("User2");
+
         assertNotEquals(user1.id(), user2.id());
         assertEquals("User1", user1.name());
         assertEquals("User2", user2.name());

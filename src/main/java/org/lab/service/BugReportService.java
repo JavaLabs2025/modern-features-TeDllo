@@ -9,7 +9,6 @@ import org.lab.model.BugReportStatus;
 import org.lab.repository.BugReportRepository;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,7 @@ public class BugReportService {
     public BugReport create(UUID projectId, String description) {
         authService.checkPermission(projectId, Permission.BUG_REPORT_CREATE);
         
-        BugReport bugReport = new BugReport(
+        var bugReport = new BugReport(
             UUID.randomUUID(),
             projectId,
             description,
@@ -35,7 +34,7 @@ public class BugReportService {
     }
 
     public List<BugReport> listByUser(UUID userId) {
-        Set<UUID> userProjectIds = authService.findAllByUserId(userId).stream()
+        var userProjectIds = authService.findAllByUserId(userId).stream()
                 .map(AccessBinding::projectId)
                 .collect(Collectors.toSet());
         
@@ -45,8 +44,8 @@ public class BugReportService {
     }
 
     public void fix(UUID bugReportId) {
-        BugReport bugReport = bugReportRepository.findById(bugReportId)
-            .orElseThrow(() -> new BugReportNotFoundException(bugReportId));
+        var bugReport = bugReportRepository.findById(bugReportId)
+            .orElseThrow(BugReportNotFoundException.supplier(bugReportId));
         
         authService.checkPermission(bugReport.projectId(), Permission.BUG_REPORT_FIX);
         
@@ -54,8 +53,8 @@ public class BugReportService {
     }
 
     public void test(UUID bugReportId) {
-        BugReport bugReport = bugReportRepository.findById(bugReportId)
-            .orElseThrow(() -> new BugReportNotFoundException(bugReportId));
+        var bugReport = bugReportRepository.findById(bugReportId)
+            .orElseThrow(BugReportNotFoundException.supplier(bugReportId));
         
         authService.checkPermission(bugReport.projectId(), Permission.BUG_REPORT_TEST);
         
@@ -63,8 +62,8 @@ public class BugReportService {
     }
 
     public void close(UUID bugReportId) {
-        BugReport bugReport = bugReportRepository.findById(bugReportId)
-            .orElseThrow(() -> new BugReportNotFoundException(bugReportId));
+        var bugReport = bugReportRepository.findById(bugReportId)
+            .orElseThrow(BugReportNotFoundException.supplier(bugReportId));
         
         authService.checkPermission(bugReport.projectId(), Permission.BUG_REPORT_CLOSE);
         

@@ -14,7 +14,7 @@ public class UserService {
     }
 
     public User register(String name) {
-        User user = new User(
+        var user = new User(
             UUID.randomUUID(),
             name,
             LocalDateTime.now()

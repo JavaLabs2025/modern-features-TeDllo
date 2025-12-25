@@ -19,122 +19,122 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MilestoneServiceTest extends TestBase {
-    
+
     private UUID projectId;
     private UUID milestoneId;
-    
+
     @BeforeEach
     void setUp() {
         setCurrentUser(managerId);
         var project = projectService.create(managerId, "Project", "Desc");
         projectId = project.id();
     }
-    
+
     @Test
     void testCreateMilestone() {
         setCurrentUser(managerId);
-        Milestone milestone = milestoneService.create(
-            projectId, 
-            LocalDate.now(), 
+        var milestone = milestoneService.create(
+            projectId,
+            LocalDate.now(),
             LocalDate.now().plusDays(30)
         );
-        
+
         assertNotNull(milestone);
         assertNotNull(milestone.id());
         assertEquals(projectId, milestone.projectId());
         assertEquals(MilestoneStatus.OPENED, milestone.status());
     }
-    
+
     @Test
     void testSetStatusToActive() {
         setCurrentUser(managerId);
-        Milestone milestone = milestoneService.create(
-            projectId, 
-            LocalDate.now(), 
+        var milestone = milestoneService.create(
+            projectId,
+            LocalDate.now(),
             LocalDate.now().plusDays(30)
         );
-        
+
         milestoneService.setStatus(milestone.id(), MilestoneStatus.ACTIVE);
-        
-        Milestone updated = milestoneRepository.findById(milestone.id()).orElseThrow();
+
+        var updated = milestoneRepository.findById(milestone.id()).orElseThrow();
         assertEquals(MilestoneStatus.ACTIVE, updated.status());
     }
-    
+
     @Test
     void testOnlyOneActiveMilestonePerProject() {
         setCurrentUser(managerId);
-        Milestone milestone1 = milestoneService.create(
-            projectId, 
-            LocalDate.now(), 
+        var milestone1 = milestoneService.create(
+            projectId,
+            LocalDate.now(),
             LocalDate.now().plusDays(30)
         );
         milestoneService.setStatus(milestone1.id(), MilestoneStatus.ACTIVE);
-        
-        Milestone milestone2 = milestoneService.create(
-            projectId, 
-            LocalDate.now().plusDays(31), 
+
+        var milestone2 = milestoneService.create(
+            projectId,
+            LocalDate.now().plusDays(31),
             LocalDate.now().plusDays(60)
         );
-        
-        assertThrows(ActiveMilestoneExistsException.class, 
+
+        assertThrows(ActiveMilestoneExistsException.class,
             () -> milestoneService.setStatus(milestone2.id(), MilestoneStatus.ACTIVE));
     }
-    
+
     @Test
     void testCannotCloseMilestoneWithIncompleteTickets() {
         setCurrentUser(managerId);
-        Milestone milestone = milestoneService.create(
-            projectId, 
-            LocalDate.now(), 
+        var milestone = milestoneService.create(
+            projectId,
+            LocalDate.now(),
             LocalDate.now().plusDays(30)
         );
-        
-        Ticket ticket = ticketService.create(projectId, milestone.id(), "Test ticket");
+
+        var ticket = ticketService.create(projectId, milestone.id(), "Test ticket");
         var updatedMilestone = milestoneRepository.findById(milestone.id()).orElseThrow();
         var milestoneWithTicket = updatedMilestone.withTicketIds(
             List.of(ticket.id())
         );
         milestoneRepository.save(milestoneWithTicket);
-        
-        assertThrows(NotAllTicketsCompletedException.class, 
+
+        assertThrows(NotAllTicketsCompletedException.class,
             () -> milestoneService.setStatus(milestone.id(), MilestoneStatus.CLOSED));
     }
-    
+
     @Test
     void testCanCloseMilestoneWhenAllTicketsCompleted() {
         setCurrentUser(managerId);
         projectService.addDeveloper(projectId, developerId);
-        Milestone milestone = milestoneService.create(
-            projectId, 
-            LocalDate.now(), 
+        var milestone = milestoneService.create(
+            projectId,
+            LocalDate.now(),
             LocalDate.now().plusDays(30)
         );
-        
-        Ticket ticket = ticketService.create(projectId, milestone.id(), "Test ticket");
+
+        var ticket = ticketService.create(projectId, milestone.id(), "Test ticket");
         ticketService.assignDeveloper(ticket.id(), developerId);
         setCurrentUser(developerId);
         ticketService.complete(ticket.id());
-        
+
         var updatedMilestone = milestoneRepository.findById(milestone.id()).orElseThrow();
         var milestoneWithTicket = updatedMilestone.withTicketIds(
             List.of(ticket.id())
         );
         milestoneRepository.save(milestoneWithTicket);
-        
+
         setCurrentUser(managerId);
-        assertDoesNotThrow(() -> 
+        assertDoesNotThrow(() ->
             milestoneService.setStatus(milestone.id(), MilestoneStatus.CLOSED));
-        
-        Milestone closed = milestoneRepository.findById(milestone.id()).orElseThrow();
+
+        var closed = milestoneRepository.findById(milestone.id()).orElseThrow();
         assertEquals(MilestoneStatus.CLOSED, closed.status());
     }
-    
+
     @Test
     void testMilestoneNotFound() {
         setCurrentUser(managerId);
-        UUID nonExistentId = UUID.randomUUID();
-        
-        assertThrows(MilestoneNotFoundException.class, 
+        var nonExistentId = UUID.randomUUID();
+
+        assertThrows(MilestoneNotFoundException.class,
             () -> milestoneService.setStatus(nonExistentId, MilestoneStatus.ACTIVE));
     }
 }

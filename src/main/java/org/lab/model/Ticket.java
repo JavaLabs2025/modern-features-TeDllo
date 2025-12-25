@@ -11,6 +11,9 @@ public record Ticket(
     String description,
     @With List<UUID> assignedDevelopers,
     @With TicketStatus status
-) {
+) implements Entity {
+    public boolean isCompleted() {
+        return status == TicketStatus.COMPLETED;
+    }
 }
 

@@ -14,5 +14,9 @@ public interface AuthRepository {
     List<AccessBinding> findAll();
     
     void deleteByUserIdAndProjectId(UUID userId, UUID projectId);
+    
+    default void delete(AccessBinding binding) {
+        deleteByUserIdAndProjectId(binding.userId(), binding.projectId());
+    }
 }
 

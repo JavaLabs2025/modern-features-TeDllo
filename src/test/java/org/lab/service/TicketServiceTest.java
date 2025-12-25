@@ -17,29 +17,29 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TicketServiceTest extends TestBase {
-    
+
     private UUID projectId;
     private UUID milestoneId;
-    
+
     @BeforeEach
     void setUp() {
         setCurrentUser(managerId);
         var project = projectService.create(managerId, "Project", "Desc");
         projectId = project.id();
-        
+
         var milestone = milestoneService.create(
-            projectId, 
-            LocalDate.now(), 
+            projectId,
+            LocalDate.now(),
             LocalDate.now().plusDays(30)
         );
         milestoneId = milestone.id();
     }
-    
+
     @Test
     void testCreateTicket() {
         setCurrentUser(managerId);
-        Ticket ticket = ticketService.create(projectId, milestoneId, "Test ticket");
-        
+        var ticket = ticketService.create(projectId, milestoneId, "Test ticket");
+
         assertNotNull(ticket);
         assertNotNull(ticket.id());
         assertEquals(projectId, ticket.projectId());
@@ -47,77 +47,77 @@ class TicketServiceTest extends TestBase {
         assertEquals("Test ticket", ticket.description());
         assertEquals(TicketStatus.NEW, ticket.status());
     }
-    
+
     @Test
     void testAssignDeveloper() {
         setCurrentUser(managerId);
         projectService.addDeveloper(projectId, developerId);
-        
-        Ticket ticket = ticketService.create(projectId, milestoneId, "Ticket");
+
+        var ticket = ticketService.create(projectId, milestoneId, "Ticket");
         ticketService.assignDeveloper(ticket.id(), developerId);
-        
-        Ticket updated = ticketRepository.findById(ticket.id()).orElseThrow();
+
+        var updated = ticketRepository.findById(ticket.id()).orElseThrow();
         assertTrue(updated.assignedDevelopers().contains(developerId));
     }
-    
+
     @Test
     void testAssignDeveloperDoesNotDuplicate() {
         setCurrentUser(managerId);
         projectService.addDeveloper(projectId, developerId);
-        
-        Ticket ticket = ticketService.create(projectId, milestoneId, "Ticket");
+
+        var ticket = ticketService.create(projectId, milestoneId, "Ticket");
         ticketService.assignDeveloper(ticket.id(), developerId);
         ticketService.assignDeveloper(ticket.id(), developerId);
-        
-        Ticket updated = ticketRepository.findById(ticket.id()).orElseThrow();
+
+        var updated = ticketRepository.findById(ticket.id()).orElseThrow();
         assertEquals(1, updated.assignedDevelopers().size());
     }
-    
+
     @Test
     void testGetStatus() {
         setCurrentUser(managerId);
         projectService.addDeveloper(projectId, developerId);
-        
-        Ticket ticket = ticketService.create(projectId, milestoneId, "Ticket");
-        TicketStatus status = ticketService.getStatus(ticket.id());
-        
+
+        var ticket = ticketService.create(projectId, milestoneId, "Ticket");
+        var status = ticketService.getStatus(ticket.id());
+
         assertEquals(TicketStatus.NEW, status);
     }
-    
+
     @Test
     void testCompleteTicket() {
         setCurrentUser(managerId);
         projectService.addDeveloper(projectId, developerId);
-        Ticket ticket = ticketService.create(projectId, milestoneId, "Ticket");
+        var ticket = ticketService.create(projectId, milestoneId, "Ticket");
         ticketService.assignDeveloper(ticket.id(), developerId);
         setCurrentUser(developerId);
         ticketService.complete(ticket.id());
-        
-        Ticket completed = ticketRepository.findById(ticket.id()).orElseThrow();
+
+        var completed = ticketRepository.findById(ticket.id()).orElseThrow();
         assertEquals(TicketStatus.COMPLETED, completed.status());
     }
-    
+
     @Test
     void testListByUser() {
         setCurrentUser(managerId);
         projectService.addDeveloper(projectId, developerId);
-        
-        Ticket ticket1 = ticketService.create(projectId, milestoneId, "Ticket 1");
-        Ticket ticket2 = ticketService.create(projectId, milestoneId, "Ticket 2");
-        
+
+        var ticket1 = ticketService.create(projectId, milestoneId, "Ticket 1");
+        var ticket2 = ticketService.create(projectId, milestoneId, "Ticket 2");
+
         ticketService.assignDeveloper(ticket1.id(), developerId);
         ticketService.assignDeveloper(ticket2.id(), developerId);
-        
-        List<Ticket> userTickets = ticketService.listByUser(developerId);
+
+        var userTickets = ticketService.listByUser(developerId);
         assertEquals(2, userTickets.size());
     }
-    
+
     @Test
     void testTicketNotFound() {
         setCurrentUser(managerId);
-        UUID nonExistentId = UUID.randomUUID();
-        
-        assertThrows(TicketNotFoundException.class, 
+        var nonExistentId = UUID.randomUUID();
+
+        assertThrows(TicketNotFoundException.class,
             () -> ticketService.getStatus(nonExistentId));
     }
 }

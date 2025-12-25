@@ -31,7 +31,7 @@ public class MilestoneService {
     public Milestone create(UUID projectId, LocalDate startDate, LocalDate endDate) {
         authService.checkPermission(projectId, Permission.MILESTONE_CREATE);
         
-        Milestone milestone = new Milestone(
+        var milestone = new Milestone(
             UUID.randomUUID(),
             projectId,
             startDate,
@@ -43,17 +43,17 @@ public class MilestoneService {
     }
 
     public void setStatus(UUID milestoneId, MilestoneStatus status) {
-        Milestone milestone = milestoneRepository.findById(milestoneId)
-            .orElseThrow(() -> new MilestoneNotFoundException(milestoneId));
+        var milestone = milestoneRepository.findById(milestoneId)
+            .orElseThrow(MilestoneNotFoundException.supplier(milestoneId));
         
         authService.checkPermission(milestone.projectId(), Permission.MILESTONE_SET_STATUS);
         
         if (status == MilestoneStatus.CLOSED) {
-            boolean allTicketsCompleted = milestone.ticketIds().stream()
+            var allTicketsCompleted = milestone.ticketIds().stream()
                     .map(ticketRepository::findById)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .allMatch(ticket -> ticket.status() == TicketStatus.COMPLETED);
+                    .allMatch(Ticket::isCompleted);
             
             if (!allTicketsCompleted) {
                 throw new NotAllTicketsCompletedException(milestoneId);
@@ -61,7 +61,7 @@ public class MilestoneService {
         }
         
         if (status == MilestoneStatus.ACTIVE) {
-            boolean hasActiveMilestone = milestoneRepository.findAll().stream()
+            var hasActiveMilestone = milestoneRepository.findAll().stream()
                     .anyMatch(m -> m.projectId().equals(milestone.projectId()) 
                             && m.status() == MilestoneStatus.ACTIVE 
                             && !m.id().equals(milestoneId));

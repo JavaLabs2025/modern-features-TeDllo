@@ -8,6 +8,6 @@ public record BugReport(
     UUID projectId,
     String description,
     @With BugReportStatus status
-) {
+) implements Entity {
 }
 

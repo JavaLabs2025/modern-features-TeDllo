@@ -29,7 +29,7 @@ public class ProjectService {
     }
 
     public List<Project> list(UUID userId) {
-        Set<UUID> userProjectIds = authService.findAllByUserId(userId).stream()
+        var userProjectIds = authService.findAllByUserId(userId).stream()
                 .map(AccessBinding::projectId)
                 .collect(Collectors.toSet());
         
@@ -39,21 +39,21 @@ public class ProjectService {
     }
 
     public Project create(UUID userId, String title, String description) {
-        Project project = new Project(
+        var project = new Project(
             UUID.randomUUID(),
             title,
             description,
             new ArrayList<>(),
             new ArrayList<>()
         );
-        Project savedProject = projectRepository.save(project);
+        var savedProject = projectRepository.save(project);
         authService.addBinding(userId, savedProject.id(), Role.MANAGER);
         return savedProject;
     }
 
     public void setTeamLead(UUID projectId, UUID teamLeadId) {
         projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(ProjectNotFoundException.supplier(projectId));
         
         authService.checkPermission(projectId, Permission.PROJECT_SET_TEAM_LEAD);
         
@@ -63,7 +63,7 @@ public class ProjectService {
 
     public void addDeveloper(UUID projectId, UUID developerId) {
         projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(ProjectNotFoundException.supplier(projectId));
         
         authService.checkPermission(projectId, Permission.PROJECT_ADD_DEVELOPER);
         
@@ -72,7 +72,7 @@ public class ProjectService {
 
     public void addTester(UUID projectId, UUID testerId) {
         projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+            .orElseThrow(ProjectNotFoundException.supplier(projectId));
         
         authService.checkPermission(projectId, Permission.PROJECT_ADD_TESTER);
         
@@ -80,8 +80,8 @@ public class ProjectService {
     }
 
     public void test(UUID projectId) {
-        Project project = projectRepository.findById(projectId)
-            .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        var project = projectRepository.findById(projectId)
+            .orElseThrow(ProjectNotFoundException.supplier(projectId));
         
         authService.checkPermission(projectId, Permission.PROJECT_TEST);
         

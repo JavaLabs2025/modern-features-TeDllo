@@ -17,14 +17,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void checkPermission(UUID projectId, Permission permission) {
-        UUID userId = AuthenticationContext.get();
+        var userId = AuthenticationContext.get();
         if (!hasPermission(userId, projectId, permission)) {
             throw new PermissionDeniedException(userId, projectId, permission);
         }
     }
 
     private boolean hasPermission(UUID userId, UUID projectId, Permission permission) {
-        AccessBinding binding = authRepository.findByUserIdAndProjectId(userId, projectId)
+        var binding = authRepository.findByUserIdAndProjectId(userId, projectId)
             .orElse(null);
 
         return binding != null && binding.role().getPermissions().contains(permission.getName());
@@ -37,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public void removeBinding(UUID userId, UUID projectId, Role role) {
-        AccessBinding binding = authRepository.findByUserIdAndProjectId(userId, projectId)
+        var binding = authRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElse(null);
         
         if (binding != null && binding.role() == role) {
@@ -56,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
     public void removeAllByProjectIdAndRole(UUID projectId, Role role) {
         authRepository.findAll().stream()
                 .filter(binding -> binding.projectId().equals(projectId) && binding.role() == role)
-                .forEach(binding -> authRepository.deleteByUserIdAndProjectId(binding.userId(), binding.projectId()));
+                .forEach(authRepository::delete);
     }
 }
 

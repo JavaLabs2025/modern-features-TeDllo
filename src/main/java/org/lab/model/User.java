@@ -7,6 +7,6 @@ public record User(
     UUID id,
     String name,
     LocalDateTime createdAt
-) {
+) implements Entity {
 }
 

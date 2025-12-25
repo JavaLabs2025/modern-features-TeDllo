@@ -23,7 +23,7 @@ public class TicketService {
     public Ticket create(UUID projectId, UUID milestoneId, String description) {
         authService.checkPermission(projectId, Permission.TICKET_CREATE);
         
-        Ticket ticket = new Ticket(
+        var ticket = new Ticket(
             UUID.randomUUID(),
             projectId,
             milestoneId,
@@ -41,12 +41,12 @@ public class TicketService {
     }
 
     public void assignDeveloper(UUID ticketId, UUID developerId) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new TicketNotFoundException(ticketId));
+        var ticket = ticketRepository.findById(ticketId)
+            .orElseThrow(TicketNotFoundException.supplier(ticketId));
         
         authService.checkPermission(ticket.projectId(), Permission.TICKET_ASSIGN_DEVELOPER);
 
-        List<UUID> developers = new ArrayList<>(ticket.assignedDevelopers());
+        var developers = new ArrayList<>(ticket.assignedDevelopers());
         if (!developers.contains(developerId)) {
             developers.add(developerId);
         }
@@ -55,8 +55,8 @@ public class TicketService {
     }
 
     public TicketStatus getStatus(UUID ticketId) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new TicketNotFoundException(ticketId));
+        var ticket = ticketRepository.findById(ticketId)
+            .orElseThrow(TicketNotFoundException.supplier(ticketId));
         
         authService.checkPermission(ticket.projectId(), Permission.TICKET_GET_STATUS);
         
@@ -64,8 +64,8 @@ public class TicketService {
     }
 
     public void complete(UUID ticketId) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new TicketNotFoundException(ticketId));
+        var ticket = ticketRepository.findById(ticketId)
+            .orElseThrow(TicketNotFoundException.supplier(ticketId));
         
         authService.checkPermission(ticket.projectId(), Permission.TICKET_COMPLETE);
 

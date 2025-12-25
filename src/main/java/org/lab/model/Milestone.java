@@ -12,6 +12,6 @@ public record Milestone(
     LocalDate endDate,
     @With List<UUID> ticketIds,
     @With MilestoneStatus status
-) {
+) implements Entity {
 }
 
